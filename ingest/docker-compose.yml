@@ -1,0 +1,12 @@
+version: '3.3'
+services:
+  app:
+    build: .
+    volumes:
+      - ./applogs:/applogs
+      - type: bind
+        source: ./google_cloud_credentials.json
+        target: /app/creds/google_cloud_credentials.json
+
+volumes:
+  applogs:

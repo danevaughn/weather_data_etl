@@ -1,0 +1,2 @@
+* * * * * export GOOGLE_APPLICATION_CREDENTIALS="/app/creds/google_cloud_credentials.json" && /usr/local/bin/python3 /app/src/main.py >> /applogs/cron.log 2>&1
+

@@ -1,0 +1,5 @@
+/applogs
+/logs
+google_cloud_credentials.json
+*config*
+*log*
