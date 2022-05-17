@@ -11,6 +11,8 @@ PROJECT_ID=$1
 BUCKET_NAME=$2
 REGION=$3
 
+PERMISSIONS=logging.logEntries.create,logging.buckets.write,storage.objects.get,storage.objects.create,bigquery.jobs.create,bigquery.datasets.create,bigquery.tables.create
+
 # Authorize user
 gcloud auth login
 
@@ -28,29 +30,18 @@ gcloud iam service-accounts create weather-app-service-account \
 	--description="Service account for interacting with Google Cloud services for weather data ETL purposes" \
 	--display-name="weather-app-service-account" \
 
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-	--member="serviceAccount:weather-app-service-account@$PROJECT_ID.iam.gserviceaccount.com" \
-	--role="roles/logging.bucketWriter"
+# Check if custom role already exists, if not then create one
+if ! gcloud iam roles describe weather_etl_user --project=$PROJECT_ID
+then
+	gcloud iam roles create weather_etl_user \
+		--project=$PROJECT_ID \
+		--permissions=$PERMISSIONS
+fi
 
+# Assign role to service account
 gcloud projects add-iam-policy-binding $PROJECT_ID \
 	--member="serviceAccount:weather-app-service-account@$PROJECT_ID.iam.gserviceaccount.com" \
-	--role="roles/logging.logWriter"
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-	--member="serviceAccount:weather-app-service-account@$PROJECT_ID.iam.gserviceaccount.com" \
-	--role="roles/storage.objectCreator"
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-	--member="serviceAccount:weather-app-service-account@$PROJECT_ID.iam.gserviceaccount.com" \
-	--role="roles/storage.objectViewer"
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-	--member="serviceAccount:weather-app-service-account@$PROJECT_ID.iam.gserviceaccount.com" \
-	--role="roles/bigquery.jobUser"
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-	--member="serviceAccount:weather-app-service-account@$PROJECT_ID.iam.gserviceaccount.com" \
-	--role="roles/bigquery.dataEditor"
+	--role="projects/$PROJECT_ID/roles/weather_etl_user"
 
 # Generate service account's private key and save it locally so Docker can access it
 gcloud iam service-accounts keys create $(pwd)/ingest/google_cloud_credentials.json \
@@ -94,3 +85,4 @@ while true; do
         * ) echo "Please answer yes or no.";;
     esac
 done
+
