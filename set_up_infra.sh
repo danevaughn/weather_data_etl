@@ -37,53 +37,59 @@ echo "Done"
 echo "Creating service account weather_app_service_account..."
 gcloud iam service-accounts create weather-app-service-account \
 	--description="Service account for interacting with Google Cloud services for weather data ETL purposes" \
-	--display-name="weather-app-service-account" 1>> setup.log
+	--display-name="weather-app-service-account" \
+	--no-user-output-enabled
 echo "Done"
 
-# Check if custom role already exists, if not then create one
-echo "Adding custom role weather_etl_user to service account weather_app_service_account..."
+# Create custom role
+echo "Creating custom role weather_etl_user..."
 if ! gcloud iam roles describe weather_etl_user --project=$PROJECT_ID; then
 	gcloud iam roles create weather_etl_user \
 		--project=$PROJECT_ID \
-		--permissions=$PERMISSIONS 1>> setup.log
+		--permissions=$PERMISSIONS \
+		--no-user-output-enabled
 fi
+echo "Done"
 
 # Assign role to service account
+echo "Adding custom role weather_etl_user to service account weather_app_service_account..."
 gcloud projects add-iam-policy-binding $PROJECT_ID \
 	--member="serviceAccount:weather-app-service-account@$PROJECT_ID.iam.gserviceaccount.com" \
-	--role="projects/$PROJECT_ID/roles/weather_etl_user" 1>> setup.log
+	--role="projects/$PROJECT_ID/roles/weather_etl_user" \
+	--no-user-output-enabled
+echo "Done"
 
 # Generate service account's private key and save it locally so Docker can access it
 echo "Generating service account's private key and saving it locally..."
 gcloud iam service-accounts keys create $(pwd)/ingest/google_cloud_credentials.json \
-	--iam-account="weather-app-service-account@$PROJECT_ID.iam.gserviceaccount.com"
+	--iam-account="weather-app-service-account@$PROJECT_ID.iam.gserviceaccount.com" \
+	--no-user-output-enabled
+echo "Done"
 
 # Create bucket for storing raw data and add permission
-echo "Creating bucket $BUCKET_NAME in region $REGION..."
 gsutil mb \
 	-c STANDARD \
 	-l $REGION \
-	gs://$BUCKET_NAME 1>> setup.log
+	gs://$BUCKET_NAME
 echo "Done"
 
 echo "Adding required permissions for bucket $BUCKET_NAME..."
 gsutil acl ch -u weather-app-service-account@$PROJECT_ID.iam.gserviceaccount.com:R \
-	gs://${BUCKET_NAME} 1>> setup.log
+	gs://${BUCKET_NAME}
 
 # Create Pub/Sub topic for given bucket
 echo "Creating Pub/Sub topic weather_app_topic for bucket $BUCKET_NAME..."
-gsutil notification create -t weather_app_topic -f json gs://$BUCKET_NAME 1>> setup.log
+gsutil notification create -t weather_app_topic -f json gs://$BUCKET_NAME
 
 # Create BQ dataset
 echo "Creating BigQuery dataset $PROJECT_ID:weather_data in region $REGION..."
 bq --location=$REGION mk \
---dataset \
---description="Raw Warsaw weather data" \
-$PROJECT_ID:weather_data 1>> setup.log
-echo "Done"
+	--dataset \
+	--description="Raw Warsaw weather data" \
+	$PROJECT_ID:weather_data
 
 # Deploy Cloud Function
-echo "Deploying transform_weather_data function in region $REGION..."
+echo "Deploying transform_weather_data function in region $REGION... (may take couple minutes)"
 gcloud functions deploy transform_weather_data \
 	--region=$REGION \
 	--runtime=python39 \
@@ -92,7 +98,9 @@ gcloud functions deploy transform_weather_data \
 	--memory=256 \
 	--retry \
 	--source=./transform/src/ \
-	--update-env-vars=TABLE=weather_data.raw_weather_data 1>> setup.log
+	--update-env-vars=TABLE=weather_data.raw_weather_data \
+	--no-user-output-enabled
+echo "Done"
 
 # Ask user if provided configs to Docker, if yes then start container
 while true; do
