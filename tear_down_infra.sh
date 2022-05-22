@@ -7,6 +7,8 @@ if [ $# -ne 3 ] ; then
 	exit 0
 fi
 
+echo "Starting infra clean up..."
+
 PROJECT_ID=$1
 BUCKET_NAME=$2
 REGION=$3
@@ -45,4 +47,6 @@ gcloud iam service-accounts delete weather-app-service-account@$PROJECT_ID.iam.g
 
 # Delete the credentials file
 rm ./ingest/google_cloud_credentials.json
+
+echo "Clean up done"
 

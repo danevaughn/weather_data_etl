@@ -7,6 +7,9 @@ services:
       - type: bind
         source: ./google_cloud_credentials.json
         target: /app/creds/google_cloud_credentials.json
+      - type: bind
+        source: ./src/config.cfg
+        target: /app/src/config.cfg
 
 volumes:
   applogs:
