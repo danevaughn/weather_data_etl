@@ -27,10 +27,10 @@ fi
 
 # Enable services
 echo "Enabling services..."
-gcloud services enable logging.googleapis.com 1>> setup.log
-gcloud services enable cloudbuild.googleapis.com 1>> setup.log
-gcloud services enable cloudfunctions.googleapis.com 1>> setup.log
-gcloud services enable bigquery.googleapis.com 1>> setup.log
+gcloud services enable logging.googleapis.com
+gcloud services enable cloudbuild.googleapis.com
+gcloud services enable cloudfunctions.googleapis.com
+gcloud services enable bigquery.googleapis.com
 echo "Done"
 
 # Create service account
