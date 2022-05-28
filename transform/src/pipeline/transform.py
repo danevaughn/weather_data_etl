@@ -22,24 +22,24 @@ def flatten_dict(data: dict) -> Dict[str, list]:
     return output
 
 
-class Transform():
+class Transform:
 
     def __init__(self, data: Dict[str, Any]):
         self.dataframe = pd.DataFrame(flatten_dict(data))
 
-    def transform_temp_to_celsius(self) -> pd.DataFrame:
+    def transform_temp_to_celsius(self) -> None:
         for column in self.dataframe:
             if 'temp' in column or column == 'main_feels_like':
                 self.dataframe[column] -= 273.15
         self.dataframe['temp_unit'] = 'Celsius'
 
 
-    def transform_units(self) -> pd.DataFrame:
+    def transform_units(self) -> None:
         self.dataframe['main_humidity'] /= 100
         self.dataframe['wind_speed'] *= 3.6
 
 
-    def add_event_columns(self, bucket: str, blob: str, creation_time: str) -> pd.DataFrame:
+    def add_event_columns(self, bucket: str, blob: str, creation_time: str) -> None:
         self.dataframe['bucket_name'] = bucket
         self.dataframe['blob_name'] = blob
         self.dataframe['timestamp'] = creation_time
