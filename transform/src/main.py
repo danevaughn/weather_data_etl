@@ -1,9 +1,10 @@
 from google.cloud import bigquery, storage
+
+from utils.exceptions import FailedBigQueryJob, NoDataException
 from pipeline import bq
 from pipeline.extract import Extract
 from pipeline.load import Load
 from pipeline.transform import Transform
-from utils.exceptions import FailedBigQueryJob, NoDataException
 
 import base64
 import json
@@ -34,8 +35,8 @@ def main(event, context) -> None:
         blob=blob, bucket=bucket, creation_time=creation_time
         )
     
-    load = Load(BQ_CLIENT, job_config=bq.load_job_config)
-    result = load.insert_dataframe(transformed_data, BQ_TABLE)
+    load = Load(BQ_CLIENT)
+    result = load.insert_dataframe(transformed_data, BQ_TABLE, bq.load_job_config)
     if result.errors:
         raise FailedBigQueryJob(result.errors)
 

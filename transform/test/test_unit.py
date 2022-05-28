@@ -69,15 +69,15 @@ class TestLoad:
     @mock.patch('src.pipeline.load.bigquery.Client')
     def loader(self, client):
         client.load_table_from_dataframe.return_value.result.return_value = {'status': 1}
+        loader = load.Load(client)
+        return loader
+
+    def test_insert_dataframe(self, loader):
         config_mock = mock.Mock()
         config_mock.schema = 1
         config_mock.write_disposition = 'WRITE_APPEND'
         config_mock.ignore_unkown_values = True
-        loader = load.Load(client, config_mock)
-        return loader
-
-    def test_insert_dataframe(self, loader):
-        output = loader.insert_dataframe('data', 'table')
+        output = loader.insert_dataframe('data', 'table', config_mock)
         assert output == {'status': 1}
 
 
@@ -121,7 +121,9 @@ class TestTransform:
         transformer.transform_temp_to_celsius()
         assert 'temp_unit' in transformer.dataframe.columns
         assert type(transformer.dataframe) is pd.DataFrame
-        assert transformer.dataframe['main_temp'][0] == 726.85
+        columns_to_test = ['main_feels_like', 'main_temp', 'main_temp_max', 'main_temp_min']
+        for column in transformer.dataframe[columns_to_test]:
+            assert transformer.dataframe[column][0] == 726.85
 
     def test_transform_units(self, transformer):
         transformer.transform_units()
