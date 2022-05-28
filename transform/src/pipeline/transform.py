@@ -29,16 +29,14 @@ class Transform():
 
     def transform_temp_to_celsius(self) -> pd.DataFrame:
         for column in self.dataframe:
-            if 'temp' in column:
+            if 'temp' in column or column == 'main_feels_like':
                 self.dataframe[column] -= 273.15
         self.dataframe['temp_unit'] = 'Celsius'
-        return self.dataframe
 
 
     def transform_units(self) -> pd.DataFrame:
         self.dataframe['main_humidity'] /= 100
         self.dataframe['wind_speed'] *= 3.6
-        return self.dataframe
 
 
     def add_event_columns(self, bucket: str, blob: str, creation_time: str) -> pd.DataFrame:
@@ -47,7 +45,6 @@ class Transform():
         self.dataframe['timestamp'] = creation_time
         self.dataframe['timestamp'] =  pd.to_datetime(self.dataframe['timestamp'], format='%Y-%m-%dT%H:%M:%S.%fZ')
         self.dataframe['real_insert_timestamp'] = pd.Timestamp.now()
-        return self.dataframe
 
 
     def apply(self, bucket: str, blob: str, creation_time: str) -> pd.DataFrame:
