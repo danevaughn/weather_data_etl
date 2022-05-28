@@ -10,9 +10,9 @@ class Load:
         self.bq_client = bq_client
 
     def insert_dataframe(
-        self, dataframe: pd.DataFrame, table_id: str, job_config: bigquery.LoadJobConfig
+        self, dataframe: pd.DataFrame, table_id: str, job_config: bigquery.LoadJobConfig, retries: int = 3
         ) -> Any:
         job = self.bq_client.load_table_from_dataframe(
-            dataframe, table_id, num_retries=3, job_config=job_config
+            dataframe, table_id, num_retries=retries, job_config=job_config
         )
         return job.result()

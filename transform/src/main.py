@@ -1,4 +1,5 @@
 from google.cloud import bigquery, storage
+from google.cloud.functions.context import Context
 
 from utils.exceptions import FailedBigQueryJob, NoDataException
 from pipeline import bq
@@ -11,15 +12,16 @@ import json
 import os
 
 
-PROJECT_ID = os.environ.get('GCP_PROJECT')
-BQ_TABLE = os.environ.get('TABLE')
+PROJECT_ID = os.environ.get('GCP_PROJECT') or ''
+BQ_TABLE = os.environ.get('TABLE') or ''
 BQ_CLIENT = bigquery.Client()
 STORAGE_CLIENT = storage.Client()
 
 
-def main(event, context) -> None:
+def main(event: dict, context: Context) -> None:
     if 'data' in event:
         event_data = json.loads(base64.b64decode(event['data']).decode('utf-8'))
+        _ = context
     else:
         raise NoDataException
 
