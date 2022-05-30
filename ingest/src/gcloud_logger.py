@@ -1,7 +1,7 @@
+from google.cloud.logging.handlers import CloudLoggingHandler
+
 import google.cloud.logging
 import logging
-
-from google.cloud.logging.handlers import CloudLoggingHandler
 
 
 def gcloud_logger(name):
